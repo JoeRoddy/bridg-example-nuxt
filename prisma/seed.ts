@@ -1,45 +1,65 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
+
 const prisma = new PrismaClient();
-async function main() {
-  const alice = await prisma.user.upsert({
-    where: { email: "alice@prisma.io" },
-    update: {},
-    create: {
-      email: "alice@prisma.io",
-      name: "Alice",
-      posts: {
-        create: {
-          title: "Check out Prisma with Next.js",
-          content: "https://www.prisma.io/nextjs",
+
+const userData: Prisma.UserCreateInput[] = [
+  {
+    name: "Alice",
+    email: "alice@prisma.io",
+    blogs: {
+      create: [
+        {
+          title: "Join the Prisma Slack",
+          body: "https://slack.prisma.io",
           published: true,
         },
-      },
+      ],
     },
-  });
-  const bob = await prisma.user.upsert({
-    where: { email: "bob@prisma.io" },
-    update: {},
-    create: {
-      email: "bob@prisma.io",
-      name: "Bob",
-      posts: {
-        create: [
-          {
-            title: "Follow Prisma on Twitter",
-            content: "https://twitter.com/prisma",
-            published: true,
-          },
-          {
-            title: "Follow Nexus on Twitter",
-            content: "https://twitter.com/nexusgql",
-            published: true,
-          },
-        ],
-      },
+  },
+  {
+    name: "Nilu",
+    email: "nilu@prisma.io",
+    blogs: {
+      create: [
+        {
+          title: "Follow Prisma on Twitter",
+          body: "https://www.twitter.com/prisma",
+          published: true,
+        },
+      ],
     },
-  });
-  console.log({ alice, bob });
+  },
+  {
+    name: "Mahmoud",
+    email: "mahmoud@prisma.io",
+    blogs: {
+      create: [
+        {
+          title: "Ask a question about Prisma on GitHub",
+          body: "https://www.github.com/prisma/prisma/discussions",
+          published: true,
+        },
+        {
+          title: "Prisma on YouTube",
+          body: "https://pris.ly/youtube",
+          published: false,
+        },
+      ],
+    },
+  },
+];
+
+async function main() {
+  console.log(`Start seeding ...`);
+  for (const u of userData) {
+    const user = await prisma.user.create({
+      data: u,
+    });
+    console.log(`Created user with id: ${user.id}`);
+  }
+  console.log(`Seeding finished.`);
 }
+
 main()
   .then(async () => {
     await prisma.$disconnect();

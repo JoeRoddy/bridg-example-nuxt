@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
+import { handleRequest } from "bridg/app/server/request-handler";
 
 // Import dependencies
 const express = require("express");
@@ -13,9 +14,13 @@ const db = new PrismaClient();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/bridg", async (req: Request, res: Response) => {
-  const data = await db.user.findMany();
-  res.json({ message: "hello bridg", data });
+app.post("/bridg", async (req: Request, res: Response) => {
+  const { data, status } = await handleRequest(req.body, {
+    db,
+    rules: { default: true },
+  });
+
+  return res.status(status).json(data);
 });
 
 module.exports = {
